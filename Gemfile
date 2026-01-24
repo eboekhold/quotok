@@ -53,8 +53,8 @@ group :development, :test do
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 
-  gem 'rspec-rails', '~> 8.0.0'
-  gem 'webmock', '~> 3.26'
-  gem 'faker'
-  gem 'factory_bot_rails'
+  gem "rspec-rails", "~> 8.0.0"
+  gem "webmock", "~> 3.26"
+  gem "faker"
+  gem "factory_bot_rails"
 end

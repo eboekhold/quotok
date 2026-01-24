@@ -19,22 +19,22 @@ class QuotesController < ApplicationController
 
   private
     def remote_quote(quote)
-      http = HTTPX.with(headers: { 'accept': 'application/json', 'Content-Type': 'application/json' })
+      http = HTTPX.with(headers: { 'accept': "application/json", 'Content-Type': "application/json" })
 
       response = http.get(quote.remote_uri)
 
-      return JSON.parse(response.body)
+      JSON.parse(response.body)
     end
 
     def prepare_json(remote_json, quote)
       json = remote_json
-      
+
       json["id"] = quote.id
       json["remote_uri"] = quote.remote_uri
 
       similar = quote.nearest_neighbors(:embedding, distance: "cosine").first(5)
       json["similar_quotes"] = similar.map { |similar_quote| url_for(similar_quote) }
 
-      return json
+      json
     end
 end

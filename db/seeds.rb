@@ -23,7 +23,7 @@ if Rails.env.development? || Rails.env.production?
   embeddings = RubyLLM.embed(quote_texts).vectors
 
   puts "Saving quote URIs and embeddings to database"
-  Quote.transaction do 
+  Quote.transaction do
     external_quote_objects.each_with_index do |external_quote_object, index|
       external_id = external_quote_object["id"]
       quote = Quote.new(
