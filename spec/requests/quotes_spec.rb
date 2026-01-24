@@ -26,9 +26,22 @@ RSpec.describe "/quotes", type: :request do
         get quote_url(quote), as: :json
         expect(response).to be_successful
       end
+
+      context "when multiple quotes exist" do
+        before { 10.times { FactoryBot.create(:quote) } }
+
+        it "has similar quotes" do
+          get quote_url(quote), as: :json
+
+          json = JSON.parse(response.body)
+
+          expect(json["similar_quotes"]).not_to be_empty
+        end
+      end
     end
   end
 
+  # Very similar to #show so we just do a smoke test
   describe "GET /random" do
     before { FactoryBot.create(:quote) }
     
