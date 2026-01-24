@@ -9,4 +9,5 @@ Rails.application.routes.draw do
   root "quotes#random"
 
   get "quotes/random", to: "quotes#random"
+  resources :quotes, only: [:show]
 end
