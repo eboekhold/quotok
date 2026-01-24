@@ -11,6 +11,24 @@ RSpec.describe "/quotes", type: :request do
       to_return_json(body: {id: Faker::Number.number(digits: 4), quote: Faker::Quote.yoda, author: Faker::Name.name})
   end
 
+  describe "GET /show/{:id}" do
+    context "when the quote does not exist" do
+      it "renders a 404" do
+        get quote_url(1), as: :json
+        expect(response.status).to eq(404)
+      end
+    end
+
+    context "when the quote exists" do
+      let(:quote) { FactoryBot.create(:quote) }
+
+      it "renders a successful response" do
+        get quote_url(quote), as: :json
+        expect(response).to be_successful
+      end
+    end
+  end
+
   describe "GET /random" do
     before { FactoryBot.create(:quote) }
     
