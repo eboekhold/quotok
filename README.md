@@ -1,24 +1,38 @@
-# README
+# Quotok
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Random quote API
 
-Things you may want to cover:
+## Dependencies
 
-* Ruby version
+- Ruby (and Bundler) 3.4.7
+- PostgreSQL
 
-* System dependencies
+## Installation
 
-* Configuration
+First download and install all the gems by running:
 
-* Database creation
+```
+bundle install
+```
 
-* Database initialization
+Then set up the database:
+```
+bin/rails db:setup
+```
 
-* How to run the test suite
+Check if all the specs run:
+```
+rspec
+```
 
-* Services (job queues, cache servers, search engines, etc.)
+Finally, run the server:
+```
+bin/rails s
+```
 
-* Deployment instructions
+## API
 
-* ...
+There is one endpoint:
+- `/random`
+
+Optionally, the root of the server `/` also returns the same result as `/random` does.
