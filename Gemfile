@@ -55,4 +55,6 @@ group :development, :test do
 
   gem 'rspec-rails', '~> 8.0.0'
   gem 'webmock', '~> 3.26'
+  gem 'faker'
+  gem 'factory_bot_rails'
 end
