@@ -27,9 +27,13 @@ class QuotesController < ApplicationController
     end
 
     def prepare_json(remote_json, quote)
-      json = remote_json
+      quote_source = quote.quote_source
+
+      json = {}
 
       json["id"] = quote.id
+      json["quote"] = remote_json[quote_source.quote_field]
+      json["author"] = remote_json[quote_source.author_field]
       json["remote_uri"] = quote.remote_uri
 
       similar = quote.nearest_neighbors(:embedding, distance: "cosine").first(5)

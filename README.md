@@ -1,8 +1,10 @@
 # Quotok
 
-Random quote API that uses semantic comparison to find similar quotes.
+Quote API relying on external quote sources. Uses semantic comparison to find similar quotes.
 
-Visit the root page `/` and click through the similar quotes to explore the application.
+Visit the root page `/` and navigate through the similar quotes to explore the application.
+
+This API relies on both [DummyJSON](https://dummyjson.com) and [The Quotes Hub](https://thequoteshub.com) as sources of quotes.
 
 ## Dependencies
 
@@ -19,7 +21,7 @@ Set your OpenAI API key as environment variable:
 export OPENAI_API_KEY=<your_key_here>
 ```
 
-OR add it to Rails' credentials with (you can replace `code` with whatever editor you prefer)
+OR add it to Rails' credentials with: (replace `code` with the editor you prefer)
 
 ```
 VISUAL="code --wait" bin/rails credentials:edit 
@@ -28,7 +30,7 @@ VISUAL="code --wait" bin/rails credentials:edit
 Then add:
 
 ```
-openai_api_key: <your_api_key_here>
+openai_api_key: <your_key_here>
 ```
 
 ### Server setup
@@ -46,6 +48,8 @@ bin/rails db:migrate
 
 Check if all the specs run:
 ```
+RAILS_ENV=test bin/rails db:setup
+
 rspec
 ```
 
@@ -70,4 +74,4 @@ The root of the server `/` also returns the same result as `/quotes/random` does
 ## OpenAI Token use
 
 This application uses OpenAI's `text-embedding-3-small` model.
-Seeding the database currently uses ~30k tokens.
+Seeding the database currently uses <100k tokens.
