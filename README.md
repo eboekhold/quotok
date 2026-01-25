@@ -2,10 +2,12 @@
 
 Random quote API that uses semantic comparison to find similar quotes.
 
+Visit the root page `/` and click through the similar quotes to explore the application.
+
 ## Dependencies
 
 - Ruby 3.4.7 (and Bundler)
-- PostgreSQL
+- PostgreSQL with the [`pgvector`](https://github.com/pgvector/pgvector) extension
 - An OpenAI API key and at least ~$0.01 in credits
 
 ## Installation
@@ -22,7 +24,8 @@ bundle install
 
 Then set up the database:
 ```
-bin/rails db:setup
+bin/rails db:create
+bin/rails db:migrate
 ```
 
 Check if all the specs run:
