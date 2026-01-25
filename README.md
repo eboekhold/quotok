@@ -12,10 +12,26 @@ Visit the root page `/` and click through the similar quotes to explore the appl
 
 ## Installation
 
+### OpenAI API Key
+
 Set your OpenAI API key as environment variable:
 ```
 export OPENAI_API_KEY=<your_key_here>
 ```
+
+OR add it to Rails' credentials with (you can replace `code` with whatever editor you prefer)
+
+```
+VISUAL="code --wait" bin/rails credentials:edit 
+```
+
+Then add:
+
+```
+openai_api_key: <your_api_key_here>
+```
+
+### Server setup
 
 Download and install all the gems by running:
 ```
