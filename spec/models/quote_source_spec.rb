@@ -10,20 +10,20 @@ end
 
 
 RSpec.describe QuoteSource, type: :model do
-  let(:mocked_embeddings) { MockEmbedding.new(Array.new(number_of_quotes) { [ *1..1536 ].map { |_| rand(-1.0...1.0) } }) }
-  let(:mocked_response_body) { { quotes: Array.new(number_of_quotes) { { id: Faker::Number.number(digits: 4), quote_key => Faker::Quote.yoda } } } }
-
-  let(:dummy_website_url) { "https://dummy.website.com/quotes" }
-  let(:quote_key) { 'string' }
-  let(:quote_source) { QuoteSource.create(remote_path: "#{dummy_website_url}/", quote_field: quote_key, author_field: 'author') }
-
-  let(:number_of_quotes) { 1 }
-
-  before do
-    stub_request(:any, dummy_website_url).to_return_json(body: mocked_response_body)
-  end
-
   describe '#generate_quote_embeddings' do
+    let(:number_of_quotes) { 1 }
+    let(:quote_hash_key) { 'string' }
+
+    let(:mocked_embeddings) { MockEmbedding.new(Array.new(number_of_quotes) { [ *1..1536 ].map { |_| rand(-1.0...1.0) } }) }
+    let(:mocked_response_body) { { quotes: Array.new(number_of_quotes) { { id: Faker::Number.number(digits: 4), quote_hash_key => Faker::Quote.yoda } } } }
+
+    let(:dummy_website_url) { "https://dummy.website.com/quotes" }
+    let(:dummy_website_stub) { stub_request(:any, dummy_website_url).to_return_json(body: mocked_response_body) }
+
+    let(:quote_source) { QuoteSource.create(remote_path: "#{dummy_website_url}/", quote_field: quote_hash_key, author_field: 'author') }
+
+    before { dummy_website_stub }
+
     subject { quote_source.generate_quote_embeddings("", dummy_website_url) }
 
     context "when RubyLLM does not throw an error" do
@@ -42,6 +42,13 @@ RSpec.describe QuoteSource, type: :model do
 
     context 'when RubyLLM throws an error' do
       before { expect(RubyLLM).to receive(:embed).and_raise(RubyLLM::Error) }
+
+      it { expect { subject }.not_to change { Quote.count } }
+      it { is_expected.to be false }
+    end
+
+    context 'when remote quote source throws an error' do
+      let(:dummy_website_stub) { stub_request(:any, dummy_website_url).to_timeout }
 
       it { expect { subject }.not_to change { Quote.count } }
       it { is_expected.to be false }

@@ -10,11 +10,18 @@ class QuoteSource < ApplicationRecord
 
     puts "Requesting all quotes from #{name}" unless Rails.env.test?
     response = http.get(quotes_path)
-    json = JSON.parse(response.body)
 
-    external_quote_objects = json["quotes"]
+    unless response.error
+      json = JSON.parse(response.body)
 
-    quote_texts = external_quote_objects.map { |q| q[quote_field] }
+      external_quote_objects = json["quotes"]
+
+      quote_texts = external_quote_objects.map { |q| q[quote_field] }
+    else
+      logger.error error_text(response)
+
+      return false
+    end
 
     puts "Generating embeddings on quotes through OpenAI" unless Rails.env.test?
     begin
@@ -37,4 +44,13 @@ class QuoteSource < ApplicationRecord
       end
     end
   end
+
+  private
+    def error_text(response)
+      if response.try(:body).present?
+        JSON.parse(response.body)
+      else
+        response.error.message
+      end
+    end
 end
