@@ -1,15 +1,15 @@
 require 'rails_helper'
 
 RSpec.describe "/quotes", type: :request do
+  let(:dummyjson_template) { Addressable::Template.new "https://dummyjson.com/quotes/{id}" }
   let(:dummyjson_stub) do
-    uri_template = Addressable::Template.new "https://dummyjson.com/quotes/{id}"
-    stub_request(:any, uri_template).
+    stub_request(:any, dummyjson_template).
       to_return_json(body: { id: Faker::Number.number(digits: 4), quote: Faker::Quote.yoda, author: Faker::Name.name })
   end
 
+  let(:thequoteshub_template) { Addressable::Template.new "https://thequoteshub.com/api/quotes/{id}" }
   let(:thequoteshub_stub) do
-    uri_template = Addressable::Template.new "https://thequoteshub.com/api/quotes/{id}"
-    stub_request(:any, uri_template).
+    stub_request(:any, thequoteshub_template).
       to_return_json(body: { id: Faker::Number.number(digits: 4), text: Faker::Quote.fortune_cookie, author: Faker::Name.name })
   end
 
@@ -34,10 +34,28 @@ RSpec.describe "/quotes", type: :request do
 
       it "renders a successful response" do
         expect(response).to be_successful
+        expect(response.body).not_to include "error"
       end
 
       it "calls dummyjson once" do
         expect(dummyjson_stub).to have_been_requested.once
+      end
+
+      context "when the quote with that ID does not exist on dummyjson" do
+        let(:dummyjson_stub) do
+          stub_request(:any, dummyjson_template).
+            to_return_json(status: 404, body: { message: "Quote with id '1' not found" })
+        end
+
+        it "returns 404" do
+          get quote_url(quote), as: :json
+
+          expect(response.status).to eq(404)
+        end
+
+        it "has an error message present" do
+          expect(response.body).to include "error"
+        end
       end
     end
 
@@ -63,6 +81,23 @@ RSpec.describe "/quotes", type: :request do
         expect(json['quote']).not_to be_empty
         expect(json['author']).not_to be_empty
         expect(json['remote_uri']).to include "thequoteshub"
+      end
+
+      context "when the quote with that ID does not exist on dummyjson" do
+        let(:thequoteshub_stub) do
+          stub_request(:any, thequoteshub_template).
+            to_return_json(status: 404, body: { "status" => 404, "message" => "Quote not found", "error" => "Invalid quote ID" })
+        end
+
+        it "returns 404" do
+          get quote_url(quote), as: :json
+
+          expect(response.status).to eq(404)
+        end
+
+        it "has an error message present" do
+          expect(response.body).to include "error"
+        end
       end
     end
 
