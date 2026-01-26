@@ -77,8 +77,25 @@ They both support one optional parameter:
 The root of the server `/` also returns the same result as `/quotes/random` does.
 
 Example requests:
-- http://localhost:3000/quotes/12?similar=50  -- for local server
+- http://localhost:3000/quotes/1428  -- for local server
 - https://quotok-production.up.railway.app/quotes/random?similar=42 -- for live server
+
+Example response:
+```
+{
+  "id": 1428,
+  "remote_uri": "https://dummyjson.com/quotes/1428",
+  "quote": "I learned that every mortal will taste death. But only some will taste life.",
+  "author": "Rumi",
+  "similar_quotes": [
+    0: "https://quotok-production.up.railway.app/quotes/2869",
+    1: "https://quotok-production.up.railway.app/quotes/502",
+    2: "https://quotok-production.up.railway.app/quotes/2921",
+    3: "https://quotok-production.up.railway.app/quotes/621",
+    4: "https://quotok-production.up.railway.app/quotes/2447",
+  ]
+}
+```
 
 ## OpenAI Token use
 
