@@ -72,7 +72,7 @@ There are two endpoints:
 - `/quotes/{:id}` -- returns a specific quote
 
 They both support one optional parameter:
-- `?similar=<number>` -- to specify how many similar neighbor quotes you want.
+- `?similar=<number>` -- to specify how many semantically similar neighbors you want references to.
 
 The root of the server `/` also returns the same result as `/quotes/random` does.
 
