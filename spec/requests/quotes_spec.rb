@@ -120,6 +120,37 @@ RSpec.describe "/quotes", type: :request do
       it "calls dummyjson once" do
         expect(dummyjson_stub).to have_been_requested.once
       end
+
+      context "when the similar= param is passed" do
+        let(:similar_count) { 3 }
+
+        subject { get quote_url(quote, params: { similar: similar_count }), as: :json }
+
+
+        it "has the right amount of similar quotes" do
+          json = JSON.parse(response.body)
+
+          expect(json["similar_quotes"].length).to eq similar_count
+        end
+
+        context "when it's a bigger number than the amount of quotes in the database" do
+          let(:similar_count) { 9999999 }
+
+          it "has the same amount of similar quotes as there are in the database minus the requested quote" do
+            json = JSON.parse(response.body)
+
+            expect(json["similar_quotes"].length).to eq Quote.count - 1
+          end
+        end
+
+        context "when its a bigger number than the database can handle" do
+          let(:similar_count) { 99999999999999999999999999 }
+
+          it "does not crash" do
+            expect(response).to be_successful
+          end
+        end
+      end
     end
   end
 

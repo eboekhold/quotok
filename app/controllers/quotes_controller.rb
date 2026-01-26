@@ -1,4 +1,7 @@
 class QuotesController < ApplicationController
+  DEFAULT_AMOUNT_OF_NEIGHBORS = 5
+  PG_MAX_BIGINT = 9223372036854775807
+
   # GET /quotes/{:id}
   def show
     quote = Quote.find(params.expect(:id))
@@ -32,8 +35,7 @@ class QuotesController < ApplicationController
       json["id"] = quote.id
       json["remote_uri"] = quote.remote_uri
 
-      similar = quote.nearest_neighbors(:embedding, distance: "cosine").first(5)
-      json["similar_quotes"] = similar.map { |similar_quote| url_for(similar_quote) }
+      json["similar_quotes"] = nearest_neighbors(quote).map { |neighbor| url_for(neighbor) }
 
       if response.error
         if response.try(:body).present?
@@ -51,6 +53,13 @@ class QuotesController < ApplicationController
       json
     end
 
+    def nearest_neighbors(quote)
+      amount_of_neighbors = quote_params[:similar].present? ? quote_params[:similar].to_i : DEFAULT_AMOUNT_OF_NEIGHBORS
+      amount_of_neighbors = [amount_of_neighbors, PG_MAX_BIGINT].min
+      
+      neighbors = quote.nearest_neighbors(:embedding, distance: "cosine").first(amount_of_neighbors)
+    end
+
     def status_from(response)
       remote_request_status = response.try(:status)
 
@@ -61,5 +70,9 @@ class QuotesController < ApplicationController
       else
         502 # Bad Gateway
       end
+    end
+
+    def quote_params
+      params.permit(:id, :similar)
     end
 end

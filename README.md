@@ -6,6 +6,8 @@ Visit the root page `/` and navigate through the similar quotes to explore the a
 
 This API relies on both [DummyJSON](https://dummyjson.com) and [The Quotes Hub](https://thequoteshub.com) as sources of quotes.
 
+As of writing there is a copy running on https://quotok-production.up.railway.app/ .
+
 ## Dependencies
 
 - Ruby 3.4.7 (and Bundler)
@@ -69,7 +71,14 @@ There are two endpoints:
 - `/quotes/random` -- returns a random quote
 - `/quotes/{:id}` -- returns a specific quote
 
+They both support one optional parameter:
+- `?similar=<number>` -- to specify how many similar neighbor quotes you want.
+
 The root of the server `/` also returns the same result as `/quotes/random` does.
+
+Example requests:
+- http://localhost:3000/quotes/12?similar=50  -- for local server
+- https://quotok-production.up.railway.app/quotes/random?similar=42 -- for live server
 
 ## OpenAI Token use
 
