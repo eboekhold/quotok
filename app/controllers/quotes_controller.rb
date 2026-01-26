@@ -32,7 +32,6 @@ class QuotesController < ApplicationController
 
       json["id"] = quote.id
       json["remote_uri"] = quote.remote_uri
-      json["similar_quotes"] = nearest_neighbors(quote).map { |neighbor| url_for(neighbor) }
 
       unless response.error
         quote_source = quote.quote_source
@@ -40,7 +39,11 @@ class QuotesController < ApplicationController
 
         json["quote"] = remote_json[quote_source.quote_field]
         json["author"] = remote_json[quote_source.author_field]
-      else
+      end
+
+      json["similar_quotes"] = nearest_neighbors(quote).map { |neighbor| url_for(neighbor) }
+
+      if response.error
         json["remote_error"] = error_text(response)
       end
 
