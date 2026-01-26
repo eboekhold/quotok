@@ -28,26 +28,20 @@ class QuotesController < ApplicationController
     end
 
     def prepare_json(response, quote)
-      quote_source = quote.quote_source
-
       json = {}
 
       json["id"] = quote.id
       json["remote_uri"] = quote.remote_uri
-
       json["similar_quotes"] = nearest_neighbors(quote).map { |neighbor| url_for(neighbor) }
 
-      if response.error
-        if response.try(:body).present?
-          response_body = JSON.parse(response.body)
-        else
-          response_body = response.error.message
-        end
-        json["remote_error"] = response_body
-      else
+      unless response.error
+        quote_source = quote.quote_source
         remote_json = JSON.parse(response.body)
+
         json["quote"] = remote_json[quote_source.quote_field]
         json["author"] = remote_json[quote_source.author_field]
+      else
+        json["remote_error"] = error_text(response)
       end
 
       json
@@ -55,9 +49,17 @@ class QuotesController < ApplicationController
 
     def nearest_neighbors(quote)
       amount_of_neighbors = quote_params[:similar].present? ? quote_params[:similar].to_i : DEFAULT_AMOUNT_OF_NEIGHBORS
-      amount_of_neighbors = [amount_of_neighbors, PG_MAX_BIGINT].min
-      
+      amount_of_neighbors = [ amount_of_neighbors, PG_MAX_BIGINT ].min
+
       neighbors = quote.nearest_neighbors(:embedding, distance: "cosine").first(amount_of_neighbors)
+    end
+
+    def error_text(response)
+      if response.try(:body).present?
+        JSON.parse(response.body)
+      else
+        response.error.message
+      end
     end
 
     def status_from(response)
