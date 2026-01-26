@@ -5,7 +5,7 @@ class QuotesController < ApplicationController
 
     response = remote_quote(quote)
 
-    render json: prepare_json(response, quote), status: response.status
+    render json: prepare_json(response, quote), status: status_from(response)
   end
 
   # GET /quotes/random
@@ -14,7 +14,7 @@ class QuotesController < ApplicationController
 
     response = remote_quote(quote)
 
-    render json: prepare_json(response, quote), status: response.status
+    render json: prepare_json(response, quote), status: status_from(response)
   end
 
   private
@@ -27,8 +27,6 @@ class QuotesController < ApplicationController
     def prepare_json(response, quote)
       quote_source = quote.quote_source
 
-      remote_json = JSON.parse(response.body)
-
       json = {}
 
       json["id"] = quote.id
@@ -37,13 +35,31 @@ class QuotesController < ApplicationController
       similar = quote.nearest_neighbors(:embedding, distance: "cosine").first(5)
       json["similar_quotes"] = similar.map { |similar_quote| url_for(similar_quote) }
 
-      if response.status == 200
+      if response.error
+        if response.try(:body).present?
+          response_body = JSON.parse(response.body)
+        else
+          response_body = response.error.message
+        end
+        json["remote_error"] = response_body
+      else
+        remote_json = JSON.parse(response.body)
         json["quote"] = remote_json[quote_source.quote_field]
         json["author"] = remote_json[quote_source.author_field]
-      else
-        json["remote_error"] = remote_json
       end
 
       json
+    end
+
+    def status_from(response)
+      remote_request_status = response.try(:status)
+
+      if remote_request_status == 200 || remote_request_status == 404 # OK or NOT FOUND
+        remote_request_status
+      elsif response.error.is_a? HTTPX::TimeoutError
+        504 # Gateway Timeout
+      else
+        502 # Bad Gateway
+      end
     end
 end

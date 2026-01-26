@@ -137,5 +137,33 @@ RSpec.describe "/quotes", type: :request do
     it "renders a successful response" do
       expect(response).to be_successful
     end
+
+    context "when the request to the remote site times out" do
+      let(:dummyjson_stub) { stub_request(:any, dummyjson_template).to_timeout }
+
+      it "renders a 504 response" do
+        expect(response).not_to be_successful
+        expect(response.status).to eq 504
+      end
+
+      it "still contains information the local server has" do
+        json = JSON.parse(response.body)
+        expect(json["remote_uri"]).to be_present
+      end
+    end
+
+    context "when the remote site returns an error" do
+      let(:dummyjson_stub) { stub_request(:any, dummyjson_template).to_return(status: [ 500, "Internal Server Error" ]) }
+
+      it "renders a 502 response" do
+        expect(response).not_to be_successful
+        expect(response.status).to eq 502
+      end
+
+      it "still contains information the local server has" do
+        json = JSON.parse(response.body)
+        expect(json["remote_uri"]).to be_present
+      end
+    end
   end
 end
