@@ -21,21 +21,30 @@ RSpec.describe QuoteSource, type: :model do
 
   before do
     stub_request(:any, dummy_website_url).to_return_json(body: mocked_response_body)
-
-    expect(RubyLLM).to receive(:embed).and_return(mocked_embeddings).once
   end
 
   describe '#generate_quote_embeddings' do
     subject { quote_source.generate_quote_embeddings("", dummy_website_url) }
 
-    it "creates a quote object" do
-      expect { subject }.to change { Quote.count }.from(0).to(1)
+    context "when RubyLLM does not throw an error" do
+      before { expect(RubyLLM).to receive(:embed).and_return(mocked_embeddings).once }
+
+      it "creates a quote object" do
+        expect { subject }.to change { Quote.count }.from(0).to(1)
+      end
+
+      context 'when the website returns 5 quotes' do
+        let(:number_of_quotes) { 5 }
+
+        it { expect { subject }.to change { Quote.count }.from(0).to(5) }
+      end
     end
 
-    context 'when the website returns 5 quotes' do
-      let(:number_of_quotes) { 5 }
+    context 'when RubyLLM throws an error' do
+      before { expect(RubyLLM).to receive(:embed).and_raise(RubyLLM::Error) }
 
-      it { expect { subject }.to change { Quote.count }.from(0).to(5) }
+      it { expect { subject }.not_to change { Quote.count } }
+      it { is_expected.to be false }
     end
   end
 end

@@ -17,7 +17,13 @@ class QuoteSource < ApplicationRecord
     quote_texts = external_quote_objects.map { |q| q[quote_field] }
 
     puts "Generating embeddings on quotes through OpenAI" unless Rails.env.test?
-    embeddings = RubyLLM.embed(quote_texts).vectors
+    begin
+      embeddings = RubyLLM.embed(quote_texts).vectors
+    rescue RubyLLM::Error => e
+      logger.error "RubyLLM API Error: #{e.class} - #{e.message}"
+
+      return false
+    end
 
     puts "Saving quotes to the database" unless Rails.env.test?
     Quote.transaction do
